@@ -51,7 +51,9 @@ class CrawlerService
         $this->parseRobotsTxt();
 
         // Seed registered Laravel routes into the crawl queue
-        $this->seedRegisteredRoutes();
+        if (config('audit.crawler.seed_laravel_routes', true)) {
+            $this->seedRegisteredRoutes();
+        }
 
         $totalQueued = count($this->queue);
 
@@ -92,15 +94,17 @@ class CrawlerService
 
             \Illuminate\Support\Facades\Log::info("Crawler visiting URL: {$url}");
 
+            $headers = array_merge([
+                'User-Agent' => 'Laravel-Audit-Crawler/1.0',
+                'X-Audit-Run-Id' => $run->id,
+            ], config('audit.crawler.headers', []));
+
             $startTime = microtime(true);
             try {
                 $response = Http::withoutVerifying()
                     ->timeout($this->timeout)
                     ->withOptions(['cookies' => false])
-                    ->withHeaders([
-                        'User-Agent' => 'Laravel-Audit-Crawler/1.0',
-                        'X-Audit-Run-Id' => $run->id,
-                    ])
+                    ->withHeaders($headers)
                     ->get($url);
                 $duration = (int) ((microtime(true) - $startTime) * 1000);
                 

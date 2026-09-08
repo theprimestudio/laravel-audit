@@ -48,6 +48,12 @@ return [
         'timeout' => 60,
         'retry' => 3,
 
+        // Custom headers to pass with every crawler request (useful for bypassing Cloudflare WAF, etc.)
+        'headers' => [],
+
+        // Whether to seed the crawler with all registered Laravel routes (true) or just crawl from links (false)
+        'seed_laravel_routes' => true,
+
         'exclude_paths' => [
             '/admin/*',
             '/login',
